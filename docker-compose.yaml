@@ -1,0 +1,14 @@
+version: '3'
+services:
+  engine_search:
+    image: sittiwat555/sentence_bert:lastest
+    build:
+      context: .
+      dockerfile: DockerFile.a5st123994
+    # ports:
+    #   - 5000:5000
+    volumes:
+      - ./app:/root/app
+
+
+  
