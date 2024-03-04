@@ -2,29 +2,35 @@ from flask import Flask, render_template, request
 import torchtext, torch
 from function import *
 from torchtext.data.utils import get_tokenizer
+
 app = Flask(__name__)
 # set the device
 device=  torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# load the tokenizer
-tokenizer_en = get_tokenizer("basic_english")
-# load the token and vocab transform
-with open('./models/token_transform.pkl', 'rb') as f:
-    token_transform = pickle.load(f)
-with open('./models/vocab_transform.pkl', 'rb') as f:
-    vocab_transform = pickle.load(f)
 
+# load the tokenizer and vocab transform
+tokenizer= get_tokenizer("basic_english")
+vocab = torch.load('./models/vocab.pt', map_location=torch.device('cpu'))
 
-@app.route('/', methods=['GET', 'POST'])
+# Load the custom sentence transformer model
+params, state = torch.load('./models/s_bert.pt', map_location=torch.device('cpu'))
+loaded_model = BERT(**params, device=device).to(device)
+loaded_model.load_state_dict(state)
+loaded_model.eval()
+
+@app.route('/')
 def index():
-    most_similar_words = None
+    return render_template('index.html')
+
+@app.route('/calculate', methods=['POST'])
+def calculate_similarity():
     if request.method == 'POST':
-        search_word = request.form.get('search')
-        if search_word:
-            most_similar_words = get_generate(model,search_word)
-            # combine the words and cut the <eos> token
-            most_similar_words = "".join(most_similar_words)[:-5]
-    print(most_similar_words)
-    return render_template('index.html', most_similar_words=most_similar_words)
-    
+        sentence1 = request.form['sentence1']
+        sentence2 = request.form['sentence2']
+
+        # Calculate cosine similarity
+        similarity =  calculate_similarity_bert(loaded_model, tokenizer, vocab, sentence1, sentence2, device)
+
+        return render_template('index.html', similarity=similarity, sentence1=sentence1, sentence2=sentence2)
+
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True)

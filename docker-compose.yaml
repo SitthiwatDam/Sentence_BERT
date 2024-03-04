@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: DockerFile.a5st123994
-    # ports:
-    #   - 5000:5000
+    ports:
+      - 5000:5000
     volumes:
       - ./app:/root/app
 
