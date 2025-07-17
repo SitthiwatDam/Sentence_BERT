@@ -1,4 +1,4 @@
-# A5 Sentence Embedding with BERT
+# Sentence Embedding with BERT
  
 
 ## Custom-Trained Sentence Transformer Training Process
